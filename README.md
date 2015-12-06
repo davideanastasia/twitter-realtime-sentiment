@@ -13,8 +13,11 @@ twitter-sentiment-stream is a POC of sentiment analysis for the Twitter stream. 
 sbt assembly
 ```
 
-to build the jar with the project. You will then need a running Cassandra listening on 127.0.0.1, an Spark installation 
-and two bash windows open (I personally have used brew on my Mac to install them, as well as Scala and SBT):
+to build the jar with the project.
+
+You will also need Twitter credentials (plenty of links on the internet on how to obtain them) to insert in the
+twitter.properties file, a running Cassandra node listening on localhost, Spark and two bash windows open (I have used 
+brew on my Mac to install them, as well as Scala and SBT):
 
 In the first:
 
@@ -33,6 +36,10 @@ In the second:
 will start the HTTP WebSocket server.
 
 Done that, you are ready to open the static/index.html file in your browser and see the cloud being refreshed!
+
+In the browser you should see something like this:
+
+![alt tag](https://raw.githubusercontent.com/davideanastasia/twitter-realtime-sentiment/master/sample.png)
 
 ## References
 
