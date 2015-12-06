@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tweeter Sentiment Cloud</title>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="d3.layout.cloud.js"></script>
+
+    <style>
+        body {
+            font-family:"Lucida Grande","Droid Sans",Arial,Helvetica,sans-serif;
+        }
+        .legend {
+            border: 1px solid #555555;
+            border-radius: 5px 5px 5px 5px;
+            font-size: 0.8em;
+            margin: 10px;
+            padding: 8px;
+        }
+        .bld {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div>
+    <!-- style="width: 40%;" -->
+    <div class="legend">
+        Commonly used words are larger and darker. Less common words are smaller and slightly faded in color.
+    </div>
+</div>
+
+<div id="graph">
+    <div id="wordCloud"></div>
+</div>
+
+<script type="text/javascript">
+
+    var color = d3.scale.linear()
+        .domain([0    ,1      ,2      ,3      ,4      ,5      ,6      ,10     ,15     ,20     ,30     , 40])
+        .range(["#222", "#333", "#444", "#555", "#666", "#777", "#888", "#999", "#aaa", "#bbb", "#ccc", "#ddd"]);
+
+    function draw(words) {
+        d3.select("#wordCloud").remove();
+        d3.select("#graph")
+            .append("svg")
+            .attr("id", "wordCloud")
+            .attr("width", 1024)
+            .attr("height", 350)
+            .attr("class", "wordcloud")
+            .append("g")
+            // without the transform, words words would get cutoff to the left and top, they would
+            // appear outside of the SVG area
+            .attr("transform", "translate(320,200)")
+            .selectAll("text")
+            .data(words)
+            .enter().append("text")
+            .style("font-size", function(d) { return d.size + "px"; })
+            .style("fill", function(d, i) { return color(i); })
+            .attr("transform", function(d) {
+                return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+            })
+            .text(function(d) { return d.text; });
+    }
+
+    $(document).ready(function () {
+        // web socket handling
+        if ('WebSocket' in window) {
+            connect('ws://localhost:9001/stats');
+        }
+        else {
+            alert("WebSockets don't seem to be supported on this browser.");
+        }
+
+        function connect(host) {
+            ws = new WebSocket(host);
+            ws.onopen = function () {
+                console.log('Connected!');
+            };
+
+            ws.onmessage = function (evt) {
+                // handle data in evt.data
+                d = JSON.parse(evt.data);
+
+                d3.layout.cloud().size([800, 300])
+                    .words(d)
+                    .rotate(0)
+                    .fontSize(function(d) { return d.size; })
+                    .on("end", draw)
+                    .start();
+
+                console.log(evt.data);
+            };
+
+            ws.onclose = function () {
+                console.log('Socket connection was closed!!!');
+            };
+        };
+    });
+
+</script>
+
+</body>
+</html>
